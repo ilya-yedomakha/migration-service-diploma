@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	  xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1.0">
+	<title>Migration service</title>
+
+	<script th:src="@{/js/jquery-3.5.0.js}"></script>
+	<link rel="stylesheet" th:href="@{/css/style.css}">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	<script>
+		$(document).ready(function(){
+            $("#localForm, #foreignForm, #bankIdForm").on("submit", function(){
+                $("#pageloader").fadeIn();
+            });
+
+            $("#emailField").show();
+            $("#phoneNumber").hide();
+
+            $("#toggleButton").click(function () {
+                $("#emailLabel, #emailField").toggle();
+                $("#phoneLabel, #phoneNumber").toggle();
+            });
+
+            $("#localForm").on("submit", function(event) {
+                var errorMessages = [];
+
+                const localUsername = $("#localUsername").val();
+                const localFirstName = $("#localFirstName").val();
+                const localSecondName = $("#localSecondName").val();
+                const localLastName = $("#localLastName").val();
+                const rntrc = $("#rntrc").val();
+                const pattern = /^(?:[A-Z]{2}-\d{6}|\d{9})$/;
+                const namePattern = /^[А-ЯІЇЄҐа-яіїєґA-Za-z]+$/;
+                const rntrcPattern = /^\d{10}$/;
+
+                if (!pattern.test(localUsername)) {
+                    errorMessages.push("Invalid passport format. It should be either: 'AB-xxxxxx' or 'xxxxxxxxx'.");
+                }
+
+                if (!namePattern.test(localFirstName) || !namePattern.test(localSecondName) || !namePattern.test(localLastName)) {
+                    errorMessages.push("Names must consist only of characters of the Ukrainian or English alphabet.");
+                }
+
+                if (!rntrcPattern.test(rntrc)) {
+                    errorMessages.push("RNTRC must be 10 digits.");
+                }
+
+                if (errorMessages.length > 0) {
+                    $("#local-error-message").html(errorMessages.join("<br>"));
+                    $("#pageloader").fadeOut();
+                    event.preventDefault();
+                } else {
+                    $("#local-error-message").html("");
+                }
+            });
+
+            $("#foreignForm").on("submit", function(event) {
+                var errorMessages = [];
+
+                const foreignUsername = $("#foreignUsername").val();
+                const foreignFirstName = $("#foreignFirstName").val();
+                const foreignSecondName = $("#foreignSecondName").val();
+                const foreignLastName = $("#foreignLastName").val();
+                const phoneNumber = $("#phoneNumber").val();
+                const emailField = $("#emailField").val();
+                const visapattern = /^[A-Z0-9]{8}$/;
+                const namePattern = /^[А-ЯІЇЄҐа-яіїєґA-Za-z]+$/;
+                const phonePattern = /^(\+380\d{9}|\+1\d{10})$/;
+                const emailPattern = /^[a-zA-Z0-9._%+-]+@(gmail\.com|ukr\.net)$/;
+
+                if (!visapattern.test(foreignUsername)) {
+                    errorMessages.push("Invalid visa format. It should be: 'xxxxxxxx'.");
+                }
+
+                if (!namePattern.test(foreignFirstName) || !namePattern.test(foreignSecondName) || !namePattern.test(foreignLastName)) {
+                    errorMessages.push("Names must consist only of characters of the Ukrainian or English alphabet.");
+                }
+
+                if ((phoneNumber === "" && emailField === "") ||
+                    (phoneNumber !== "" && !phonePattern.test(phoneNumber)) ||
+                    (emailField !== "" && !emailPattern.test(emailField))) {
+                    errorMessages.push("Either phone number or email must be provided. Phone number must be in formats +380xxxxxxxxx or +1xxxxxxxxxx. Email must end with @gmail.com or @ukr.net.");
+                }
+
+                if (errorMessages.length > 0) {
+                    $("#foreign-error-message").html(errorMessages.join("<br>"));
+                    $("#pageloader").fadeOut();
+                    event.preventDefault();
+                } else {
+                    $("#foreign-error-message").html("");
+                }
+            });
+
+            $("#bankIdForm").on("submit", function(event) {
+                var errorMessages = [];
+
+                const bankIdUsername = $("#bankIdUsername").val();
+                const bankIdpattern = /^(?:[A-Z]{2}-\d{6}|\d{9})$/;
+
+                if (!bankIdpattern.test(bankIdUsername)) {
+                    errorMessages.push("Invalid passport format. It should be either: 'AB-xxxxxx' or 'xxxxxxxxx'.");
+                }
+
+                if (errorMessages.length > 0) {
+                    $("#bankId-error-message").html(errorMessages.join("<br>"));
+                    $("#pageloader").fadeOut();
+                    event.preventDefault();
+                } else {
+                    $("#bankId-error-message").html("");
+                }
+            });
+        });
+
+        function showForm(formId) {
+
+
+    		document.querySelectorAll('.toggle_button').forEach(button => {
+        		button.classList.remove('active');
+    		});
+
+
+    		document.querySelector(`[onclick="showForm('${formId}')"]`).classList.add('active');
+            document.getElementById('localFormDiv').classList.remove('active');
+            document.getElementById('foreignFormDiv').classList.remove('active');
+            document.getElementById('bankIdFormDiv').classList.remove('active');
+            document.getElementById(formId).classList.add('active');
+        }
+
+        window.onload = function() {
+            showForm('localFormDiv');
+        }
+	</script>
+</head>
+
+<body>
+<div id="pageloader">
+	<img src="http://cdnjs.cloudflare.com/ajax/libs/semantic-ui/0.16.1/images/loader-large.gif" alt="processing..."/>
+</div>
+<header class="header">
+	<a href="/" class="logo">
+		<img th:src="@{/images/logo.png}"/>
+	</a>
+
+	<nav class="navbar">
+		<a href="/">Home</a>
+		<a href="/#about">About us</a>
+		<a href="/#services">Services</a>
+		<a href="/#contacts">Contacts</a>
+		<div class="dropdown">
+			<a>Articles</a>
+			<div class="dropdown-content">
+				<a href="/articles/FAQ">FAQ</a>
+				<a href="/articles/documentInfo">Document information</a>
+				<a href="/articles/News">News</a>
+				<a href="/articles/">All Articles</a>
+			</div>
+		</div>
+	</nav>
+
+	<div class="icons">
+		<a href="/webcab/show"> <div class="fas fa-user" id="cabinet"></div></a>
+		<a sec:authorize="isAuthenticated()" href="/logout"><div class="fas fa-sign-out-alt" id="logout"></div></a>
+		<a sec:authorize="!isAuthenticated()" href="/login"> <div class="fas fa-sign-in-alt" id="login"></div></a>
+	</div>
+
+</header>
+
+<section class="form" id="form">
+
+	<div class="logregPage">
+		<div class="container">
+			<div class="row">
+
+				<h2 class="logregHeader">Registration</h2>
+
+				<div class="span-container">
+					<span class="toggle_button" onclick="showForm('localFormDiv')">Registration for citizen</span>
+					<span class="toggle_button" onclick="showForm('foreignFormDiv')">Registration for foreigners</span>
+					<span class="toggle_button" onclick="showForm('bankIdFormDiv')">BankID Registration</span>
+				</div>
+				<div id="localFormDiv" class="form-container active">
+					<form id="localForm" th:action="@{/registration}" method="post" th:object="${user}">
+						<!-- success message -->
+						<div th:if="${param.success}">
+							<h1>You were successfully registered!</h1>
+						</div>
+						<h1 id="local-error-message"></h1>
+						<div class="form-group">
+							<label for="localFirstName">First name:</label>
+							<input type="text" id="localFirstName"  th:field="*{firstName}"
+								   required autofocus="autofocus" placeholder="First name..." />
+						</div>
+						<div class="form-group">
+							<label for="localSecondName">Second name:</label>
+							<input type="text" id="localSecondName"  th:field="*{secondName}"
+								   required autofocus="autofocus" placeholder="Second name/ Patronymic..." />
+						</div>
+						<div class="form-group">
+							<label for="localLastName">Last name:</label>
+							<input type="text" id="localLastName"  th:field="*{lastName}"
+								   required autofocus="autofocus" placeholder="Last name..."/>
+						</div>
+						<div class="form-group">
+							<label for="localUsername">Passport number:</label>
+							<input type="text" id="localUsername"  th:field="*{numPassport}" required
+								   autofocus="autofocus" placeholder="Passport number..."/>
+						</div>
+						<div class="form-group">
+							<label for="rntrc">RNTRC:</label>
+							<input type="text" id="rntrc"  th:field="*{RNTRC}" required
+								   autofocus="autofocus" placeholder="RNTRC number..."/>
+						</div>
+						<div class="form-group">
+							<label for="password">Password:</label>
+							<input id="password"  type="password"
+								   th:field="*{password}" required autofocus="autofocus" placeholder="Password..."/>
+						</div>
+						<div class="form-group">
+							<div class="button-container">
+								<input type="submit" name="login-submit" id="login-submit"
+									   class="button_subm" value="Register"/>
+							</div>
+						</div>
+						<p class="newuser">Already registered? <a class="reghref" th:href="@{/login}">Login here</a></p>
+					</form>
+				</div>
+
+				<div id="foreignFormDiv" class="form-container">
+					<button id="toggleButton">Toggle Email/Phone</button>
+					<form id="foreignForm" th:action="@{/registration/foreign}" method="post" th:object="${user}">
+						<!-- success message -->
+						<div th:if="${param.success}">
+							<h1 class="alert alert-info">Your personal cabinet access code was sent to your email/phone!</h1>
+						</div>
+						<h1 id="foreign-error-message"></h1>
+						<div class="form-group">
+							<label for="foreignFirstName">First name:</label>
+							<input type="text" id="foreignFirstName"  th:field="*{firstName}"
+								   required autofocus="autofocus" placeholder="First name..."/>
+						</div>
+						<div class="form-group">
+							<label for="foreignSecondName">Second name:</label>
+							<input type="text" id="foreignSecondName"  th:field="*{secondName}"
+								   required autofocus="autofocus" placeholder="Second name..."/>
+						</div>
+						<div class="form-group">
+							<label for="foreignLastName">Last name:</label>
+							<input type="text" id="foreignLastName"  th:field="*{lastName}"
+								   required autofocus="autofocus" placeholder="Last name..."/>
+						</div>
+						<label for="phoneNumber">Where to send password:</label>
+						<div class="form-group">
+							<input type="text" id="phoneNumber" th:field="*{phone}" name="phoneNumber" placeholder="Phone number...">
+						</div>
+						<div class="form-group">
+							<input type="text" id="emailField" th:field="*{email}" name="emailField" placeholder="Email...">
+						</div>
+						<div class="form-group">
+							<label for="foreignUsername">Visa number:</label>
+							<input type="text" id="foreignUsername"  th:field="*{numPassport}" required
+								   autofocus="autofocus" placeholder="Visa number..."/>
+						</div>
+						<div class="form-group">
+							<div class="button-container">
+								<input type="submit" name="login-submit" id="login-submit"
+									   class="button_subm" value="Register"/>
+							</div>
+						</div>
+						<p class="newuser">Already registered? <a class="reghref" th:href="@{/login}">Login here</a></p>
+					</form>
+				</div>
+
+				<div id="bankIdFormDiv" class="form-container">
+					<form id="bankIdForm" th:action="@{/registration/bankId}" method="post" th:object="${user}">
+						<!-- success message -->
+						<div th:if="${param.success}">
+							<h1 class="alert alert-info">Done with BankId!</h1>
+						</div>
+						<div class="form-group">
+							<input type="text"  id="bankIdUsername"  th:field="*{numPassport}" required
+								   autofocus="autofocus" placeholder="Passport number..."/>
+						</div>
+						<div class="form-group">
+							<div class="button-container">
+								<input type="submit" name="login-submit" id="login-submit"
+									   class="button_subm" value="Register"/>
+							</div>
+						</div>
+						<p class="newuser">Already registered? <a class="reghref" th:href="@{/login}">Login here</a></p>
+					</form>
+				</div>
+
+			</div>
+		</div>
+	</div>
+</section>
+
+<footer class="footer">
+	<div class="follow">
+		<a href="#" class="fab fa-facebook-f"></a>
+		<a href="#" class="fab fa-twitter"></a>
+		<a href="#" class="fab fa-instagram"></a>
+		<a href="#" class="fab fa-linkedin"></a>
+		<a href="#" class="fab fa-pinterest"></a>
+	</div>
+	<div class="links">
+		<a href="/">Home</a>
+		<a href="/#about">About us</a>
+		<a href="/#services">Services</a>
+		<a href="/#contacts">Contacts</a>
+		<a href="/articles/">Articles</a>
+	</div>
+	<div class="credit">© 2024 Migration service. All rights reserved</div>
+</footer>
+
+</body>
+
+</html>

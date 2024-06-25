@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3" xmlns="http://www.w3.org/1999/html">
+
+<head>
+    <meta charset="UTF-8">
+
+    <title>Migration service</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <script th:src="@{/js/jquery-3.5.0.js}"></script>
+
+    <script>
+        let currentStartDate = new Date();
+        currentStartDate.setDate(currentStartDate.getDate() - currentStartDate.getDay() + 1);
+
+        function markRegistered(date, time) {
+            let cell = document.getElementById(date + '_' + time);
+            if (cell.classList.contains('available')) {
+                let [hour, minute] = time.split(':');
+                hour = ('0' + hour).slice(-2);
+                let dateTime = date.split('.').reverse().join('-') + 'T' + hour + ':' + minute + ':00';
+                var QueueRow = {
+                    departmentId: $("#departmentId").val(),
+                    operationId: $("#operation").val(),
+                    dateTime: dateTime,
+                    phone: $("#phoneNumber").val(),
+                    email: $("#emailField").val()
+                };
+
+                var url = '/queueRow/'+ $("#rowId").val();
+                $.ajax({
+                    url: url,
+                    type: 'PUT',
+                    contentType: 'application/json',
+                    data: JSON.stringify(QueueRow),
+                    dataType: 'json',
+                    beforeSend: function() {
+                        $("#pageloader").fadeIn();
+                    },
+                    success: function (data) {
+                        location.href = "/webcab/show";
+                    },
+                    error: function (e) {
+                        alert("Error! Something went wrong!");
+                    },
+                    complete: function() {
+                        $("#pageloader").fadeOut();
+                    }
+                });
+            } else {
+                alert('Time passed or taken.');
+            }
+        }
+
+        function getFormattedDate(date) {
+            let day = date.getDate();
+            let month = date.getMonth() + 1;
+            let year = date.getFullYear();
+            return (day < 10 ? '0' : '') + day + '.' + (month < 10 ? '0' : '') + month + '.' + year;
+        }
+
+        function getDayOfWeek(date) {
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', "Friday", 'Saturday'];
+            return days[date.getDay()];
+        }
+
+        function generateCalendar(conflictTimes) {
+            let tableHead = document.querySelector('thead tr');
+            let tableBody = document.querySelector('tbody');
+            tableHead.innerHTML = '<th>Time/Date</th>';
+            tableBody.innerHTML = '';
+
+            let dates = [];
+            for (let i = 0; i < 7; i++) {
+                let date = new Date(currentStartDate);
+                date.setDate(currentStartDate.getDate() + i);
+                dates.push(date);
+                tableHead.innerHTML += `<th>${getDayOfWeek(date)}, ${getFormattedDate(date)}</th>`;
+            }
+
+            let now = new Date();
+            for (let hour = 9; hour <= 18; hour++) {
+                let row = document.createElement('tr');
+                let timeCell = document.createElement('td');
+                timeCell.textContent = hour + ':00';
+                row.appendChild(timeCell);
+
+                for (let date of dates) {
+                    let formattedDate = getFormattedDate(date);
+                    let cell = document.createElement('td');
+                    cell.id = formattedDate + '_' + hour + ':00';
+                    let dateTimeStr = formattedDate.split('.').reverse().join('-') + 'T' + ('0' + hour).slice(-2) + ':00:00';
+                    let cellDateTime = new Date(dateTimeStr);
+
+                    if (conflictTimes.includes(dateTimeStr)) {
+                        cell.classList.add('registered');
+                    } else if (cellDateTime <= now) {
+                        cell.classList.add('past');
+                    } else {
+                        cell.classList.add('available');
+                        cell.setAttribute('onclick', `markRegistered('${formattedDate}', '${hour}:00')`);
+                    }
+                    row.appendChild(cell);
+                }
+
+                tableBody.appendChild(row);
+            }
+        }
+
+        function navigateCalendar(direction) {
+            if (direction === 'prev') {
+                currentStartDate.setDate(currentStartDate.getDate() - 7);
+            } else if (direction === 'next') {
+                currentStartDate.setDate(currentStartDate.getDate() + 7);
+            }
+            generateCalendar(window.conflictTimes);
+        }
+
+        window.onload = function() {
+            generateCalendar(window.conflictTimes);
+        };
+    </script>
+</head>
+
+<body>
+<header class="header">
+    <a href="/" class="logo">
+        <img th:src="@{/images/logo.png}"/>
+    </a>
+
+    <nav class="navbar">
+        <a href="/">Home</a>
+        <a href="/#about">About us</a>
+        <a href="/#services">Services</a>
+        <a href="/#contacts">Contacts</a>
+        <div class="dropdown">
+            <a>Articles</a>
+            <div class="dropdown-content">
+                <a href="/articles/FAQ">FAQ</a>
+                <a href="/articles/documentInfo">Document information</a>
+                <a href="/articles/News">News</a>
+                <a href="/articles/">All Articles</a>
+            </div>
+        </div>
+
+    </nav>
+
+    <div class="icons">
+        <a href="/webcab/show">
+            <div class="fas fa-user" id="cabinet"></div>
+        </a>
+        <a sec:authorize="isAuthenticated()" href="/logout">
+            <div class="fas fa-sign-out-alt" id="logout"></div>
+        </a>
+        <a sec:authorize="!isAuthenticated()" href="/login">
+            <div class="fas fa-sign-in-alt" id="login"></div>
+        </a>
+    </div>
+
+</header>
+
+<div id="pageloader">
+    <img src="http://cdnjs.cloudflare.com/ajax/libs/semantic-ui/0.16.1/images/loader-large.gif" alt="processing..."/>
+</div>
+<input type="hidden" id="phoneNumber" name="phoneNumber" th:value="${phone}">
+<input type="hidden" id="emailField" name="emailField" th:value="${email}">
+<input type="hidden" id="operation" name="operation" th:value="${operation}">
+<input type="hidden" id="departmentId" name="departmentId" th:value="${departmentId}">
+<section class="calendar" id="calendar">
+    <div class="container">
+        <h3>Edit your queue record</h3>
+        <input type="hidden" id="rowId" th:value="${rowId}">
+        <div class="navigation">
+            <div class="fa-solid fa-arrow-left" onclick="navigateCalendar('prev')"></div>
+            <div class="fa-solid fa-arrow-right" onclick="navigateCalendar('next')"></div>
+        </div>
+        <table>
+            <thead>
+            <tr>
+                <th>Time/Date</th>
+                <!-- Динамічне генерування заголовків стовпців -->
+            </tr>
+            </thead>
+            <tbody>
+            <!-- Динамічне генерування календаря -->
+            </tbody>
+        </table>
+    </div>
+</section>
+<script th:inline="javascript">
+    window.conflictTimes = /*[[${conflictTimes}]]*/ [];
+</script>
+
+<footer class="footer">
+    <div class="follow">
+        <a href="#" class="fab fa-facebook-f"></a>
+        <a href="#" class="fab fa-twitter"></a>
+        <a href="#" class="fab fa-instagram"></a>
+        <a href="#" class="fab fa-linkedin"></a>
+        <a href="#" class="fab fa-pinterest"></a>
+    </div>
+    <div class="links">
+        <a href="/">Home</a>
+        <a href="/#about">About us</a>
+        <a href="/#services">Services</a>
+        <a href="/#contacts">Contacts</a>
+        <a href="/articles/">Articles</a>
+    </div>
+    <div class="credit">© 2024 Migration service. All rights reserved</div>
+</footer>
+
+</body>
+
+</html>

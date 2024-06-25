@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+
+<head>
+    <meta charset="UTF-8">
+
+    <title>Migration service</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+
+</head>
+
+<body>
+<header class="header">
+    <a href="/" class="logo">
+        <img th:src="@{/images/logo.png}"/>
+    </a>
+
+    <nav class="navbar">
+        <a href="/">Home</a>
+        <a href="/#about">About us</a>
+        <a href="/#services">Services</a>
+        <a href="/#contacts">Contacts</a>
+        <div class="dropdown">
+            <a>Articles</a>
+            <div class="dropdown-content">
+                <a href="/articles/FAQ">FAQ</a>
+                <a href="/articles/documentInfo">Document information</a>
+                <a href="/articles/News">News</a>
+                <a href="/articles/">All Articles</a>
+            </div>
+        </div>
+
+    </nav>
+
+    <div class="icons">
+        <div class="fas fa-search" id="search-btn"></div>
+        <a href="/webcab/show">
+            <div class="fas fa-user" id="cabinet"></div>
+        </a>
+        <a sec:authorize="isAuthenticated()" href="/logout">
+            <div class="fas fa-sign-out-alt" id="logout"></div>
+        </a>
+        <a sec:authorize="!isAuthenticated()" href="/login">
+            <div class="fas fa-sign-in-alt" id="login"></div>
+        </a>
+    </div>
+    <div class="search-form">
+        <form th:action="|/admin/users/${role == 'admin' ? 'admins/' : (role == 'user' ? 'users/' : (role == 'citizen' ? 'citizens/' : ''))}search|"
+              method="get">
+            <input id="search-box" type="text" name="query" placeholder="Search users" required>
+            <button class="fas fa-search" type="submit"></button>
+        </form>
+    </div>
+</header>
+
+<section class="home" id="home">
+    <div class="content">
+        <div class="container">
+            <h2>Users</h2>
+            <a class="btn" th:href="@{/admin/users/createUser/}" >Add user</a>
+            <table>
+                <thead>
+                <tr>
+                    <th>Passport/Visa</th>
+                    <th>Name</th>
+                    <th>Surname</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr class="tr_ref" th:each="user : ${userPage.content}" th:onclick="|window.location.href='@{/admin/user/}' + ${user.id}|">
+                    <td th:text="${user.numPassport}"></td>
+                    <td th:text="${user.firstName}"></td>
+                    <td th:text="${user.lastName}"></td>
+                </tr>
+                </tbody>
+            </table>
+            <div th:if="${userPage.totalPages > 0}" class="pagination">
+    <span th:each="pageNumber : ${pageNumbers}">
+        <a th:href="${query == null or query == ''} ?
+                   '/admin/users/' + (${role == 'admin' ? 'admins/' : (role == 'user' ? 'users/' : (role == 'citizen' ? 'citizens/' : ''))}) + '?size=' + ${userPage.size} + '&page=' + ${pageNumber} :
+                   '/admin/users/' +(${role == 'admin' ? 'admins/' : (role == 'user' ? 'users/' : (role == 'citizen' ? 'citizens/' : ''))}) + 'search?size=' + ${userPage.size} + '&page=' + ${pageNumber} + '&query=' + ${query}"
+           th:text="${pageNumber}"
+           th:classappend="${pageNumber == userPage.number + 1} ? ' active' : ''"></a>
+    </span>
+            </div>
+
+        </div>
+        <aside class="sidebar">
+            <a th:href="@{/admin/users/}" th:classappend="${role} == 'all' ? 'active' : ''">All</a>
+            <a th:href="@{/admin/users/admins}" th:classappend="${role} == 'admin' ? 'active' : ''">Admin roles</a>
+            <a th:href="@{/admin/users/users}" th:classappend="${role} == 'user' ? 'active' : ''">User roles</a>
+            <a th:href="@{/admin/users/citizens}" th:classappend="${role} == 'citizen' ? 'active' : ''">Citizen roles</a>
+        </aside>
+    </div>
+</section>
+
+<footer class="footer">
+    <div class="follow">
+        <a href="#" class="fab fa-facebook-f"></a>
+        <a href="#" class="fab fa-twitter"></a>
+        <a href="#" class="fab fa-instagram"></a>
+        <a href="#" class="fab fa-linkedin"></a>
+        <a href="#" class="fab fa-pinterest"></a>
+    </div>
+    <div class="links">
+        <a href="/">Home</a>
+        <a href="/#about">About us</a>
+        <a href="/#services">Services</a>
+        <a href="/#contacts">Contacts</a>
+        <a href="/articles/">Articles</a>
+    </div>
+    <div class="credit">© 2024 Migration service. All rights reserved</div>
+</footer>
+<script>
+    document.getElementById('search-btn').onclick = () => {
+        document.querySelector('.search-form').classList.toggle('active');
+    }
+</script>
+</body>
+
+</html>

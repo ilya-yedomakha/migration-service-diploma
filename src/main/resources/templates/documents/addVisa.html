@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3" xmlns="http://www.w3.org/1999/html">
+
+<head>
+    <meta charset="UTF-8">
+
+    <title>Migration service</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <script th:src="@{/js/jquery-3.5.0.js}"></script>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <script type="text/javascript">
+        jQuery(document).ready(function () {
+            jQuery("#visaForm").submit(function (event) {
+
+                event.preventDefault();
+
+                var errorMessages = [];
+
+                const localUsername = $("#number").val();
+                const passportNumber = $("#passportNumber").val();
+                const controlNumber = $("#controlNumber").val();
+                const localFirstName = $("#firstName").val();
+                const localSecondName = $("#secondName").val();
+                const localLastName = $("#lastName").val();
+                const issueDepartment = $("#issueDepartment").val();
+
+                const visaNumberPattern = /^[A-Z0-9]{8}$/;
+                const passportNumberPattern = /^(?:[A-Z]{2}-\d{6}|\d{9})$/;
+                const controlNumberPattern = /^\d{14}$/;
+                const namePattern = /^[А-ЯІЇЄҐа-яіїєґA-Za-z]+$/;
+                const issueDepartmentPattern = /^\d{4}$/;
+
+                if (!visaNumberPattern.test(localUsername)) {
+                    errorMessages.push("Invalid visa format. It should be: 'xxxxxxxx'..");
+                }
+
+                if (!namePattern.test(localFirstName) || !namePattern.test(localSecondName) || !namePattern.test(localLastName)) {
+                    errorMessages.push("Names must consist only of characters of the Ukrainian or English alphabet.");
+                }
+
+                if (!passportNumberPattern.test(passportNumber)) {
+                    errorMessages.push("Invalid passport format. It should be either: 'AB-xxxxxx' or 'xxxxxxxxx'.");
+                }
+
+                if (!controlNumberPattern.test(controlNumber)) {
+                    errorMessages.push("Visa control number must be in this format(14 digits): xxxxxxxxxxxxxx.");
+                }
+                if (!issueDepartmentPattern.test(issueDepartment)) {
+                    errorMessages.push("Issue department must be in this format: xxxx.");
+                }
+
+
+                if (errorMessages.length > 0) {
+                    $("#local-error-message").html(errorMessages.join("<br>"));
+                } else {
+                    $("#local-error-message").html("");
+                    var visa = {
+                        number: jQuery("#number").val(),
+                        firstName: jQuery("#firstName").val(),
+                        secondName: jQuery("#secondName").val(),
+                        lastName: jQuery("#lastName").val(),
+                        issueDate: jQuery("#issueDate").val(),
+                        issueDepartment: jQuery("#issueDepartment").val(),
+                        expireDate: jQuery("#expireDate").val(),
+                        sex: jQuery("#sex").val(),
+                        nationality: jQuery("#nationality").val(),
+                        passportNumber: jQuery("#passportNumber").val(),
+                        controlNumber: jQuery("#controlNumber").val(),
+                        dateOfBirth: jQuery("#dateOfBirth").val()
+                    };
+                    var url = '/visa/';
+                    $.ajax({
+                        url: url,
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(visa),
+                        dataType: 'json',
+                        success: function (data) {
+                            alert("Visa verified successfully!");
+                            location.href = "/webcab/docs";
+                        },
+                        error: function (e) {
+                            alert("Error! Something went wrong!");
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+</head>
+
+<body>
+<header class="header">
+    <a href="/" class="logo">
+        <img th:src="@{/images/logo.png}"/>
+    </a>
+
+    <nav class="navbar">
+        <a href="/">Home</a>
+        <a href="/#about">About us</a>
+        <a href="/#services">Services</a>
+        <a href="/#contacts">Contacts</a>
+        <div class="dropdown">
+            <a>Articles</a>
+            <div class="dropdown-content">
+                <a href="/articles/FAQ">FAQ</a>
+                <a href="/articles/documentInfo">Document information</a>
+                <a href="/articles/News">News</a>
+                <a href="/articles/">All Articles</a>
+            </div>
+        </div>
+
+    </nav>
+
+    <div class="icons">
+        <a href="/webcab/show"> <div class="fas fa-user" id="cabinet"></div></a>
+        <a sec:authorize="isAuthenticated()" href="/logout"><div class="fas fa-sign-out-alt" id="logout"></div></a>
+        <a sec:authorize="!isAuthenticated()" href="/login"> <div class="fas fa-sign-in-alt" id="login"></div></a>
+    </div>
+
+</header>
+
+<section class="form" id="form">
+    <h2>Visa verification </h2>
+    <h1 id="local-error-message"></h1>
+    <form id="visaForm">
+    <div class="form-group">
+        <label for="number">Number:</label>
+        <input type="text" id="number" name="number" required>
+    </div>
+    <div class="form-group">
+        <label for="passportNumber">Passport number:</label>
+        <input type="text" id="passportNumber" name="number" required>
+    </div>
+    <div class="form-group">
+        <label for="controlNumber">Control number:</label>
+        <input type="text" id="controlNumber" name="number" required>
+    </div>
+    <div class="form-group">
+        <label for="firstName">First Name:</label>
+        <input type="text" id="firstName" name="firstName" required>
+    </div>
+    <div class="form-group">
+        <label for="firstName">Second name/ Patronymic:</label>
+        <input type="text" id="secondName" name="secondName" required>
+    </div>
+    <div class="form-group">
+        <label for="lastName">Last Name:</label>
+        <input type="text" id="lastName" name="lastName" required>
+    </div>
+    <div class="form-group">
+        <label for="issueDate">Issue Date:</label>
+        <input type="date" id="issueDate" name="issueDate" required>
+    </div>
+    <div class="form-group">
+        <label for="issueDepartment">Issue Department:</label>
+        <input type="text" id="issueDepartment" name="issueDepartment" required>
+    </div>
+    <div class="form-group">
+        <label for="expireDate">Expire Date:</label>
+        <input type="date" id="expireDate" name="expireDate" required>
+    </div>
+    <label for="sex">Sex:</label>
+    <select id="sex" >
+        <option value="M">Male</option>
+        <option value="F">Female</option>
+    </select>
+    <label for="nationality">Nationality:</label>
+    <select id="nationality" >
+        <option value="US">American</option>
+        <option value="UK">United Kingdom</option>
+        <option value="PL">Polish</option>
+        <option value="UKR">Ukrainian</option>
+    </select>
+    <div class="form-group">
+        <label for="dateOfBirth">Date of Birth:</label>
+        <input type="date" id="dateOfBirth" name="dateOfBirth" required>
+    </div>
+    <div class="button-container">
+        <input type="submit" id="addVisa" value="Submit">
+    </div>
+    </form>
+</section>
+
+<footer class="footer">
+    <div class="follow">
+        <a href="#" class="fab fa-facebook-f"></a>
+        <a href="#" class="fab fa-twitter"></a>
+        <a href="#" class="fab fa-instagram"></a>
+        <a href="#" class="fab fa-linkedin"></a>
+        <a href="#" class="fab fa-pinterest"></a>
+    </div>
+    <div class="links">
+        <a href="/">Home</a>
+        <a href="/#about">About us</a>
+        <a href="/#services">Services</a>
+        <a href="/#contacts">Contacts</a>
+        <a href="/articles/">Articles</a>
+    </div>
+    <div class="credit">© 2024 Migration service. All rights reserved</div>
+</footer>
+
+</body>
+
+</html>

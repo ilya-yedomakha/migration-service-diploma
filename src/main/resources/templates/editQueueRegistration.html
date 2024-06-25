@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+
+<head>
+    <meta charset="UTF-8">
+
+    <title>Migration service</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <script th:src="@{/js/jquery-3.5.0.js}"></script>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <script src="/js/jquery-3.5.0.js"></script>
+    <script type="text/javascript">
+        jQuery(document).ready(function () {
+            $("#emailLabel").show();
+            $("#emailField").show();
+            $("#phoneLabel").hide();
+            $("#phoneNumber").hide();
+
+
+            $("#toggleButton").click(function () {
+                $("#emailLabel, #emailField").toggle();
+                $("#phoneLabel, #phoneNumber").toggle();
+            });
+
+            $("form").submit(function (event) {
+                let email = $("#emailField").val().trim();
+                let phone = $("#phoneNumber").val().trim();
+
+                const phoneNumber = $("#phoneNumber").val();
+                const emailField = $("#emailField").val();
+
+                if ((phoneNumber === "" && emailField === "") ||
+                    (phoneNumber !== "" && !phonePattern.test(phoneNumber)) ||
+                    (emailField !== "" && !emailPattern.test(emailField))) {
+                    event.preventDefault();
+                    $("#error-message").text("Either phone number or email must be provided. Phone number must be in formats +380xxxxxxxxx or +1xxxxxxxxxx. Email must end with @gmail.com or @ukr.net.");
+                } else {
+                    $("#error-message").text("");
+                }
+            });
+        });
+    </script>
+</head>
+
+<body>
+<header class="header">
+    <a href="/" class="logo">
+        <img th:src="@{/images/logo.png}"/>
+    </a>
+
+    <nav class="navbar">
+        <a href="/">Home</a>
+        <a href="/#about">About us</a>
+        <a href="/#services">Services</a>
+        <a href="/#contacts">Contacts</a>
+        <div class="dropdown">
+            <a>Articles</a>
+            <div class="dropdown-content">
+                <a href="/articles/FAQ">FAQ</a>
+                <a href="/articles/documentInfo">Document information</a>
+                <a href="/articles/News">News</a>
+                <a href="/articles/">All Articles</a>
+            </div>
+        </div>
+
+    </nav>
+
+    <div class="icons">
+        <a href="/webcab/show">
+            <div class="fas fa-user" id="cabinet"></div>
+        </a>
+        <a sec:authorize="isAuthenticated()" href="/logout">
+            <div class="fas fa-sign-out-alt" id="logout"></div>
+        </a>
+        <a sec:authorize="!isAuthenticated()" href="/login">
+            <div class="fas fa-sign-in-alt" id="login"></div>
+        </a>
+    </div>
+
+</header>
+
+<section class="form" id="form">
+    <button id="toggleButton">Toggle Email/Phone</button>
+    <h1 id="error-message"></h1>
+    <form th:action="@{/webcab/queue/{id}/registration/calendar/edit(id=${queueRowOld.getId()})}" th:object="${queueRow}" method="post">
+        <label id="phoneLabel" for="phoneNumber">Phone Number:</label>
+        <input type="text" id="phoneNumber" th:field="*{phone}" th:value="${queueRowOld.phone}">
+
+        <label for="emailField" id="emailLabel">Email:</label>
+        <input type="text" id="emailField" th:field="*{email}" th:value="${queueRowOld.email}">
+
+        <label for="operation">Select Operation:</label>
+        <select id="operation" th:field="*{operationId}">
+            <option th:each="operation : ${operations}"
+                    th:value="${operation.id}"
+                    th:text="${operation.name}"
+                    th:selected="${operation.id} == ${queueRowOld.operation.id}">
+            </option>
+        </select>
+
+        <label for="departmentSelect">Select Department:</label>
+        <select id="departmentSelect" th:field="*{departmentId}">
+            <option th:each="department : ${departments}"
+                    th:value="${department.id}"
+                    th:text="${department.number + ' (' + department.region + ', ' + department.city + ')'}"
+                    th:selected="${department.id} == ${queueRowOld.operator.department.id}">
+            </option>
+        </select>
+
+        <div class="button-container">
+            <div class="form-group">
+                <input class="button_subm" type="submit" id="addqueuerow" value="Edit">
+            </div>
+        </div>
+    </form>
+</section>
+
+<footer class="footer">
+    <div class="follow">
+        <a href="#" class="fab fa-facebook-f"></a>
+        <a href="#" class="fab fa-twitter"></a>
+        <a href="#" class="fab fa-instagram"></a>
+        <a href="#" class="fab fa-linkedin"></a>
+        <a href="#" class="fab fa-pinterest"></a>
+    </div>
+    <div class="links">
+        <a href="/">Home</a>
+        <a href="/#about">About us</a>
+        <a href="/#services">Services</a>
+        <a href="/#contacts">Contacts</a>
+        <a href="/articles/">Articles</a>
+    </div>
+    <div class="credit">© 2024 Migration service. All rights reserved</div>
+</footer>
+
+</body>
+
+</html>

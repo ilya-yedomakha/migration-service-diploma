@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	  xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1.0">
+	<title>Migration service</title>
+
+	<script th:src="@{/js/jquery-3.5.0.js}"></script>
+	<link rel="stylesheet" th:href="@{/css/style.css}">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+	<script>
+		function myFunction(data) {
+            alert(data);
+        }
+        $(document).ready(function() {
+            function showForm(formId) {
+				$('#localForm, #foreignForm, #bankIdForm').removeClass('active');
+				$('#' + formId).addClass('active');
+
+
+				$('.toggle_button').removeClass('active');
+				$('[data-target="' + formId + '"]').addClass('active');
+            }
+            showForm('localForm');
+
+            $('.toggle_button').on('click', function() {
+                showForm($(this).data('target'));
+            });
+
+            $("#localForm form, #foreignForm form, #bankIdForm form").on("submit", function() {
+                $("#pageloader").fadeIn();
+            });
+
+
+            $("#localForm form").on("submit", function(event) {
+                const localUsername = $("#localusername").val();
+                const pattern = /^(?:[A-Z]{2}-\d{6}|\d{9})$/;
+                if (!pattern.test(localUsername)) {
+                	$("#local-error-message").text("Invalid passport format. It should be either: 'AB-xxxxxx' or 'xxxxxxxxx'.");
+                    event.preventDefault();
+                } else {
+                	$("#local-error-message").text("");
+                }
+            });
+
+            $("#foreignForm form").on("submit", function(event) {
+                const foreignUsername = $("#foreignUsername").val();
+                const visapattern = /^[A-Z0-9]{8}$/;
+                if (!visapattern.test(foreignUsername)) {
+                	$("#foreign-error-message").text("Invalid visa format. It should be: 'xxxxxxxx'.");
+                    event.preventDefault();
+                } else {
+                	$("#foreign-error-message").text("");
+                }
+            });
+
+            $("#bankIdForm form").on("submit", function(event) {
+                const bankIdUsername = $("#bankIdUsername").val();
+                const bankIdpattern = /^(?:[A-Z]{2}-\d{6}|\d{9})$/;
+                if (!bankIdpattern.test(bankIdUsername)) {
+                	$("#bankId-error-message").text("Invalid passport format. It should be either: 'AB-xxxxxx' or 'xxxxxxxxx'.");
+                    event.preventDefault();
+                } else {
+                	$("#bankId-error-message").text("");
+                }
+            });
+        });
+	</script>
+</head>
+
+<body>
+<header class="header">
+	<a href="/" class="logo">
+		<img th:src="@{/images/logo.png}"/>
+	</a>
+
+	<nav class="navbar">
+		<a href="/">Home</a>
+		<a href="/#about">About us</a>
+		<a href="/#services">Services</a>
+		<a href="/#contacts">Contacts</a>
+		<div class="dropdown">
+			<a>Articles</a>
+			<div class="dropdown-content">
+				<a href="/articles/FAQ">FAQ</a>
+				<a href="/articles/documentInfo">Document information</a>
+				<a href="/articles/News">News</a>
+				<a href="/articles/">All Articles</a>
+			</div>
+		</div>
+
+	</nav>
+
+	<div class="icons">
+		<a href="/webcab/show"> <div class="fas fa-user" id="cabinet"></div></a>
+		<a sec:authorize="isAuthenticated()" href="/logout"><div class="fas fa-sign-out-alt" id="logout"></div></a>
+		<a sec:authorize="!isAuthenticated()" href="/login"> <div class="fas fa-sign-in-alt" id="login"></div></a>
+	</div>
+
+</header>
+
+<section class="form" id="form">
+	<div class="logregPage">
+		<div class="row">
+				<h2 class="logregHeader">Login</h2>
+				<div class="span-container">
+					<span  class="toggle_button" id="toggle_citizen" data-target="localForm">Login for citizens</span>
+					<span class="toggle_button" id="toggle_foreign" data-target="foreignForm">Foreign Login</span>
+					<span class="toggle_button" id="toggle_bankId" data-target="bankIdForm">BankID Login</span>
+				</div>
+
+				<div id="localForm" class="form-container active">
+					<form th:action="@{/login}" method="post">
+						<!-- error message -->
+						<div th:if="${param.error}">
+							<h1 class="alert alert-danger">Invalid passport number or password.</h1>
+						</div>
+						<!-- logout message -->
+						<div th:if="${param.logout}">
+							<h1 class="alert alert-info">You have been logged out.</h1>
+						</div>
+						<h1 id="local-error-message"></h1>
+						<div class="form-group">
+							<input type="text" id="localusername" name="username"
+								   placeholder="Passport number..." required autofocus="autofocus">
+						</div>
+						<div class="form-group">
+							<input type="password"  id="localpassword" name="password" required
+								   placeholder="Enter Password..."/>
+						</div>
+						<div class="form-group">
+							<div class="button-container">
+									<input type="submit" name="login-submit" id="login-submit"
+										   class="button_subm" value="Log In"/>
+							</div>
+						</div>
+					</form>
+					<div class="form-group">
+						<p class="newuser">New user? <a class="reghref" th:href="@{/registration}">Register here</a></p>
+					</div>
+				</div>
+
+				<div id="foreignForm" class="form-container">
+					<form th:action="@{/login}" method="post">
+						<!-- error message -->
+						<div th:if="${param.error}">
+							<h1 class="alert alert-danger">Invalid visa number or password.</h1>
+						</div>
+						<!-- logout message -->
+						<div th:if="${param.logout}">
+							<h1 class="alert alert-info">You have been logged out.</h1>
+						</div>
+						<h1 id="foreign-error-message"></h1>
+						<div class="form-group">
+							<input type="text" id="foreignUsername" name="username"
+								   placeholder="Enter Visa number..." required autofocus="autofocus">
+						</div>
+						<div class="form-group">
+							<input type="password" id="foreignPassword" name="password"
+								   placeholder="Enter Password..."/>
+						</div>
+						<div class="form-group">
+							<div class="button-container">
+									<input type="submit" name="login-submit" id="login-submit"
+										   class="button_subm" value="Log In"/>
+							</div>
+						</div>
+					</form>
+					<div class="form-group">
+						<p class="newuser">New user? <a class="reghref" th:href="@{/registration}">Register here</a></p>
+					</div>
+				</div>
+
+				<div id="bankIdForm" class="form-container">
+					<form th:action="@{/login}" method="post">
+						<!-- error message -->
+						<div th:if="${param.error}">
+							<h1 class="alert alert-danger">Invalid passport number or password.</h1>
+						</div>
+						<!-- logout message -->
+						<div th:if="${param.logout}">
+							<h1 class="alert alert-info">You have been logged out.</h1>
+						</div>
+						<h1 id="bankId-error-message"></h1>
+						<div class="form-group">
+							<input type="text"  id="bankIdUsername" name="username"
+								   placeholder="Enter Passport..." required autofocus="autofocus">
+						</div>
+						<div class="form-group" style="display:none">
+							<input type="password" id="password" name="password"
+								   placeholder="Enter Password..." th:value="BankIdPassword"/>
+						</div>
+						<div class="form-group">
+							<div class="button-container">
+									<input type="submit" name="login-submit" id="login-submit"
+										   class="button_subm" value="Log In"/>
+							</div>
+						</div>
+					</form>
+					<div class="form-group">
+						<p class="newuser">New user? <a class="reghref" th:href="@{/registration}">Register here</a></p>
+					</div>
+				</div>
+		</div>
+	</div>
+</section>
+
+<footer class="footer">
+	<div class="follow">
+		<a href="#" class="fab fa-facebook-f"></a>
+		<a href="#" class="fab fa-twitter"></a>
+		<a href="#" class="fab fa-instagram"></a>
+		<a href="#" class="fab fa-linkedin"></a>
+		<a href="#" class="fab fa-pinterest"></a>
+	</div>
+	<div class="links">
+		<a href="/">Home</a>
+		<a href="/#about">About us</a>
+		<a href="/#services">Services</a>
+		<a href="/#contacts">Contacts</a>
+		<a href="/articles/">Articles</a>
+	</div>
+	<div class="credit">© 2024 Migration service. All rights reserved</div>
+</footer>
+
+</body>
+
+</html>

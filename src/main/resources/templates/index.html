@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3" xmlns="http://www.w3.org/1999/html">
+
+<head>
+    <meta charset="UTF-8"><link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <title>Migration service</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+
+</head>
+
+<body>
+<header class="header">
+    <a href="/" class="logo">
+        <img th:src="@{/images/logo.png}"/>
+    </a>
+
+    <nav class="navbar">
+        <a class="active" href="/">Home</a>
+        <a href="/#about">About us</a>
+        <a href="/#services">Services</a>
+        <a href="/#contacts">Contacts</a>
+        <div class="dropdown">
+            <a>Articles</a>
+            <div class="dropdown-content">
+                <a href="/articles/FAQ">FAQ</a>
+                <a href="/articles/documentInfo">Document information</a>
+                <a href="/articles/News">News</a>
+                <a href="/articles/">All Articles</a>
+            </div>
+        </div>
+
+    </nav>
+
+    <div class="icons">
+        <a href="/webcab/show">
+            <div class="fas fa-user" id="cabinet"></div>
+        </a>
+        <a sec:authorize="isAuthenticated()" href="/logout">
+            <div class="fas fa-sign-out-alt" id="logout"></div>
+        </a>
+        <a sec:authorize="!isAuthenticated()" href="/login">
+            <div class="fas fa-sign-in-alt" id="login"></div>
+        </a>
+    </div>
+
+</header>
+
+<section class="home" id="home">
+    <div class="content">
+        <h3>Welcome to the official migration service website!</h3>
+    </div>
+</section>
+
+<section class="about" id="about">
+    <h1 class="heading"><span>About</span> us </h1>
+    <div class="row">
+        <div class="image">
+            <img th:src="@{/images/home.jpg}"/>
+        </div>
+        <div class="content">
+            <h3>Migration service website offers:</h3>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi dictum ligula vel porttitor pharetra.</p>
+            <a href="/articles/" class="btn">Articles you may find interesting</a>
+        </div>
+    </div>
+</section>
+
+<!-- services section starts -->
+<section class="services" id="services">
+    <h1 class="heading"> Services of a <span>migration service website</span></h1>
+
+    <div class="box-container">
+
+        <a th:href="@{/webcab/docs}">
+            <div class="box">
+                <img th:src="@{/images/service1.png}">
+                <h3>Your documents</h3>
+
+            </div>
+        </a>
+        <a th:href="${registrationAllowed} ? '/webcab/queue/registration/' : '/webcab/show'">
+            <div class="box">
+                <img th:src="@{/images/queue.png}">
+                <h3> Register in an electronic queue</h3>
+            </div>
+        </a>
+
+    </div>
+</section>
+<!-- services section ends -->
+<!-- contact section starts -->
+<section class="contact" id="contact">
+
+    <h1 class="heading"><span>contact</span> us </h1>
+
+    <div class="row">
+        <iframe src="https://www.google.com/maps/d/u/3/embed?mid=1w75aUZ_pMQRVhndcNGEOeNh-CyxXkj4&ehbc=2E312F" width="640" height="480"></iframe>
+        <div class="contactinfo" action="">
+            <h3>Migration service Email and Phone</h3>
+            <div class="contactBox">
+                <span class="fas fa-envelope"></span>
+                <p>buzzlightyear2030302@gmail.com</p>
+            </div>
+            <div class="contactBox">
+                <span class="fas fa-phone"></span>
+                <p>+12566938093</p>
+            </div>
+        </div>
+
+    </div>
+</section>
+<!-- contact section ends -->
+
+<footer class="footer">
+    <div class="follow">
+        <a href="#" class="fab fa-facebook-f"></a>
+        <a href="#" class="fab fa-twitter"></a>
+        <a href="#" class="fab fa-instagram"></a>
+        <a href="#" class="fab fa-linkedin"></a>
+        <a href="#" class="fab fa-pinterest"></a>
+    </div>
+    <div class="links">
+        <a href="/">Home</a>
+        <a href="/#about">About us</a>
+        <a href="/#services">Services</a>
+        <a href="/#contacts">Contacts</a>
+        <a href="/articles/">Articles</a>
+    </div>
+    <div class="credit">© 2024 Migration service. All rights reserved</div>
+</footer>
+
+</body>
+
+</html>

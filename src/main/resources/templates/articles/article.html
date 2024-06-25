@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+
+<head>
+    <meta charset="UTF-8">
+
+    <title>Migration service</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+
+</head>
+
+<body>
+<header class="header">
+    <a href="/" class="logo">
+        <img th:src="@{/images/logo.png}"/>
+    </a>
+
+    <nav class="navbar">
+        <a href="/">Home</a>
+        <a href="/#about">About us</a>
+        <a href="/#services">Services</a>
+        <a href="/#contacts">Contacts</a>
+        <div class="dropdown">
+            <a class="active">Articles</a>
+            <div class="dropdown-content">
+                <a href="/articles/FAQ">FAQ</a>
+                <a href="/articles/documentInfo">Document information</a>
+                <a href="/articles/News">News</a>
+                <a href="/articles/">All Articles</a>
+            </div>
+        </div>
+
+    </nav>
+
+    <div class="icons">
+        <a href="/webcab/show"> <div class="fas fa-user" id="cabinet"></div></a>
+        <a sec:authorize="isAuthenticated()" href="/logout"><div class="fas fa-sign-out-alt" id="logout"></div></a>
+        <a sec:authorize="!isAuthenticated()" href="/login"> <div class="fas fa-sign-in-alt" id="login"></div></a>
+    </div>
+
+</header>
+
+<section class="home" id="home">
+    <div class="content">
+        <div class="container">
+            <input type="hidden" id="articleId" name="articleId" th:value="${article.id}">
+            <h3 class="title_article" th:text="${article.title}">Article Title</h3>
+            <div sec:authorize="hasAuthority('ADMIN')" class="actions">
+                <a class="btn" th:href="@{/admin/article/editForm/{id}(id=${article.id})}">Edit</a>
+                <input class="delete-btn" type="button" id="deleteArticle" value="Delete">
+            </div>
+            <p th:utext="${article.text}">Article content goes here...</p>
+            <p th:text="'Created At: ' + ${article.createdAt}">Article content goes here...</p>
+            <p><strong>More articles of this type:</strong>
+                <a class="more-articles" th:if="${article.articleType.toString() == 'DOCUMENT_INFO'}"
+                   th:href="@{/articles/documentInfo}" th:text="${article.articleType}">Article Type</a>
+                <a class="more-articles" th:if="${article.articleType.toString() == 'NEWS'}"
+                   th:href="@{/articles/News}" th:text="${article.articleType}">Article Type</a>
+                <a class="more-articles" th:if="${article.articleType.toString() == 'FAQ'}"
+                   th:href="@{/articles/FAQ}" th:text="${article.articleType}">Article Type</a>
+            </p>
+        </div>
+    </div>
+</section>
+
+
+
+<footer class="footer">
+    <div class="follow">
+        <a href="#" class="fab fa-facebook-f"></a>
+        <a href="#" class="fab fa-twitter"></a>
+        <a href="#" class="fab fa-instagram"></a>
+        <a href="#" class="fab fa-linkedin"></a>
+        <a href="#" class="fab fa-pinterest"></a>
+    </div>
+    <div class="links">
+        <a href="/">Home</a>
+        <a href="/#about">About us</a>
+        <a href="/#services">Services</a>
+        <a href="/#contacts">Contacts</a>
+        <a href="/articles/">Articles</a>
+    </div>
+    <div class="credit">© 2024 Migration service. All rights reserved</div>
+</footer>
+
+</body>
+
+</html>

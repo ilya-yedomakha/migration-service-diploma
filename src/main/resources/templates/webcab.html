@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+
+<head>
+    <meta charset="UTF-8">
+
+    <title>Migration service</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <script src="/js/jquery-3.5.0.js"></script>
+    <script type="text/javascript">
+        jQuery(document).ready(function () {
+            jQuery.ajax({
+                url: '/webcab/user/queues/',
+                dataType: 'json',
+                type: 'GET',
+                success: function (data) {
+                    if (data.length === 0) {
+                        jQuery('#no-queues-message').show();
+                        jQuery('#queueRowsTable').hide();
+                        jQuery('#qeueues_header').hide();
+                    } else {
+                        jQuery('#headerrow').after(createDataRowsFromJson(data));
+                        jQuery('#no-queues-message').hide();
+                        jQuery('#queueRowTable').show();
+                        jQuery('#qeueues_header').show();
+                    }
+                }
+            });
+        });
+
+        function createDataRowsFromJson(data) {
+            var tableContent = "";
+            for (var key in data) {
+                if (data.hasOwnProperty(key)) {
+                    tableContent += "<tr class='datarow'>";
+                    tableContent += "<td>" + data[key].operatorFirstName + "</td>";
+                    tableContent += "<td>" + data[key].operatorLastName + "</td>";
+                    tableContent += "<td>" + data[key].operation.name + "</td>";
+                    tableContent += "<td>" + data[key].phone + "</td>";
+                    tableContent += "<td>" + data[key].email + "</td>";
+                    tableContent += "<td><span class='countdown' data-endtime='" + data[key].dateTime + "'></span></td>";
+                    tableContent += "<td>" + data[key].dateTime + "</td>";
+                    tableContent += "<td>" + data[key].departmentNumber + "</td>";
+                    tableContent += "<td>" + data[key].region + "</td>";
+                    tableContent += "<td>" + data[key].city + "</td>";
+                    tableContent += "<td>";
+                    tableContent += "<input type='button' onclick='deleteQueueRow(" + data[key].id + ")' value='Delete queue' class='delButton'/>";
+                    tableContent += "<input type='button' onclick='editQueueRow(" + data[key].id + ")' value='Edit queue' class='editButton'/>";
+                    tableContent += "</td>";
+                    tableContent += "</tr>";
+                }
+            }
+            return tableContent;
+        }
+
+        function deleteQueueRow(id) {
+            var url = '/queueRow/' + id;
+            jQuery.ajax({
+                url: url,
+                type: 'DELETE',
+                success: function () {
+                    window.location.reload();
+                    jQuery.ajax({
+                        url: '/webcab/user/queues/',
+                        dataType: 'json',
+                        type: 'GET',
+                        success: function (data) {
+                            jQuery('#headerrow').after(createDataRowsFromJson(data));
+                        }
+                    });
+                },
+                error: function (e) {
+                    var text = e.responseText;
+                    if (text.includes("!DOCTYPE html")) {
+                        location.href = "/accessdenied"
+                    }
+                }
+            });
+        }
+
+        function editQueueRow(id) {
+            var url = '/webcab/queue/'+id+'/registration/edit';
+            window.location.href = url;
+        }
+
+        function startCountdown() {
+            setInterval(function () {
+                $('.countdown').each(function () {
+                    var endTime = new Date($(this).attr('data-endtime')).getTime();
+                    var now = new Date().getTime();
+                    var distance = endTime - now;
+
+                    var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                    var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    var minutes = Math.floor(((distance % (1000 * 60 * 60)) / (1000 * 60))+1);
+
+                    if (distance < 0) {
+                        $(this).text("EXPIRED");
+                    } else {
+                        $(this).text(days + "d " + hours + "h " + minutes + "m ");
+                    }
+                });
+            }, 1000);
+        }
+
+        $(document).ajaxComplete(function () {
+            startCountdown();
+        });
+    </script>
+</head>
+
+<body>
+<header class="header">
+    <a href="/" class="logo">
+        <img th:src="@{/images/logo.png}"/>
+    </a>
+
+    <nav class="navbar">
+        <a href="/">Home</a>
+        <a href="/#about">About us</a>
+        <a href="/#services">Services</a>
+        <a href="/#contacts">Contacts</a>
+        <div class="dropdown">
+            <a>Articles</a>
+            <div class="dropdown-content">
+                <a href="/articles/FAQ">FAQ</a>
+                <a href="/articles/documentInfo">Document information</a>
+                <a href="/articles/News">News</a>
+                <a href="/articles/">All Articles</a>
+            </div>
+        </div>
+
+    </nav>
+
+    <div class="icons">
+        <a href="/webcab/show">
+            <div class="fas fa-user" id="cabinet"></div>
+        </a>
+        <a sec:authorize="isAuthenticated()" href="/logout">
+            <div class="fas fa-sign-out-alt" id="logout"></div>
+        </a>
+        <a sec:authorize="!isAuthenticated()" href="/login">
+            <div class="fas fa-sign-in-alt" id="login"></div>
+        </a>
+    </div>
+
+</header>
+
+<section class="home" id="home">
+    <div class="content">
+        <div class="container">
+            <h2 th:text="'Welcome to your cabinet! ' + ${username} +' ' + ${userlastname} "> </h2>
+            <h2 id="qeueues_header">Queues</h2>
+            <h2 id="no-queues-message">There are no queues that you're in!</h2>
+            <br>
+            <table style="width: 100%" id="queueRowsTable">
+                <tr id="headerrow">
+                    <td>First Name</td>
+                    <td>Last Name</td>
+                    <td>Operation</td>
+                    <td>Phone</td>
+                    <td>Email</td>
+                    <td>Timer</td>
+                    <td>Date&Time</td>
+                    <td>Department Number</td>
+                    <td>Region</td>
+                    <td>City</td>
+                    <td>Actions</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</section>
+<section class="services" id="services">
+    <h1 class="heading"> Available <span>operations</span></h1>
+
+    <div class="box-container">
+
+        <a th:href="@{/webcab/docs}">
+            <div class="box">
+                <img th:src="@{/images/service1.png}">
+                <h3>Your documents</h3>
+
+            </div>
+        </a>
+        <a th:if="${registrationAllowed}" href='/webcab/queue/registration/'>
+            <div class="box">
+                <img th:src="@{/images/queue.png}">
+                <h3> Register in an electronic queue</h3>
+            </div>
+        </a>
+        <a sec:authorize="hasAuthority('ADMIN')" href='/admin/users/'>
+            <div class="box">
+                <img th:src="@{/images/admin.png}">
+                <h3> User management</h3>
+            </div>
+        </a>
+        <a sec:authorize="hasAuthority('ADMIN')" href='/admin/queueRows/show'>
+            <div class="box">
+                <img th:src="@{/images/admin.png}">
+                <h3> User queue</h3>
+            </div>
+        </a>
+    </div>
+</section>
+
+
+<footer class="footer">
+    <div class="follow">
+        <a href="#" class="fab fa-facebook-f"></a>
+        <a href="#" class="fab fa-twitter"></a>
+        <a href="#" class="fab fa-instagram"></a>
+        <a href="#" class="fab fa-linkedin"></a>
+        <a href="#" class="fab fa-pinterest"></a>
+    </div>
+    <div class="links">
+        <a href="/">Home</a>
+        <a href="/#about">About us</a>
+        <a href="/#services">Services</a>
+        <a href="/#contacts">Contacts</a>
+        <a href="/articles/">Articles</a>
+    </div>
+    <div class="credit">© 2024 Migration service. All rights reserved</div>
+</footer>
+
+</body>
+
+</html>
