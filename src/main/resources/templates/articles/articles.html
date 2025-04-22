@@ -22,7 +22,7 @@
         <a href="/">Home</a>
         <a href="/#about">About us</a>
         <a href="/#services">Services</a>
-        <a href="/#contacts">Contacts</a>
+        <a href="/#contact">Contacts</a>
         <div class="dropdown">
             <a class="active">Articles</a>
             <div class="dropdown-content">
@@ -78,7 +78,7 @@
     <span th:each="pageNumber : ${pageNumbers}">
         <a th:href="${query == null or query == ''} ?
                    '/articles/' + (${articleType == 'NEWS' ? 'News' : (articleType == 'DOCUMENT_INFO' ? 'documentInfo' : (articleType == 'FAQ' ? 'FAQ' : ''))}) + '?size=' + ${articlePage.size} + '&page=' + ${pageNumber} :
-                   '/articles/' + (${articleType == 'NEWS' ? 'News' : (articleType == 'DOCUMENT_INFO' ? 'documentInfo' : (articleType == 'FAQ' ? 'FAQ' : ''))}) + '/search?size=' + ${articlePage.size} + '&page=' + ${pageNumber} + '&query=' + ${query}"
+                   '/articles/' + (${articleType == 'NEWS' ? 'News/' : (articleType == 'DOCUMENT_INFO/' ? 'documentInfo' : (articleType == 'FAQ' ? 'FAQ/' : ''))}) + 'search?size=' + ${articlePage.size} + '&page=' + ${pageNumber} + '&query=' + ${query}"
            th:text="${pageNumber}"
            th:classappend="${pageNumber == articlePage.number + 1} ? ' active' : ''"></a>
     </span>
@@ -107,7 +107,7 @@
         <a href="/">Home</a>
         <a href="/#about">About us</a>
         <a href="/#services">Services</a>
-        <a href="/#contacts">Contacts</a>
+        <a href="/#contact">Contacts</a>
         <a href="/articles/">Articles</a>
     </div>
     <div class="credit">© 2024 Migration service. All rights reserved</div>
